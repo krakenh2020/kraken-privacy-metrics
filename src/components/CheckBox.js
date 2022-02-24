@@ -5,11 +5,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { FormControl, Input, Button, InputLabel, makeStyles } from '@material-ui/core';
 import { useHistory } from "react-router-dom"
 
-/*
-description:
-This component displays the privacy value in the form of a bar chart with different colors.
-*/
-
 const useStyles = makeStyles((theme) => ({
   root: {
     '& > *': {
@@ -28,9 +23,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
+/**
+ * Form for per-file questions
+ * @param adversaryState state from the adversary form
+ */
 export default function CheckboxLabels(adversaryState) {
-
   //each checkbox has its own variable
   const [state, setState] = React.useState({
     numFiles: 1,

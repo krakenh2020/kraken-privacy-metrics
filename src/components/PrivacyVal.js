@@ -4,10 +4,9 @@ import { useHistory } from "react-router-dom";
 import ProgressBar from './ProgressBar';
 import calculatePrivacyMetric from '../services/UserPrivacyService';
 
-/*
-displays the privacy value in form of a bar chart on a new page
-*/
-
+/**
+ * Display bar with privacy score
+ */
 export default function AdversaryStrength() {
   const paperStyle = { padding: '50px 20px', width: 600, margin: "20px auto" }
   let history = useHistory();

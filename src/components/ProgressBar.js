@@ -1,9 +1,8 @@
 import React from "react";
 
-/*
-represents the privacy value in a bar chart 
-*/
-
+/**
+ * The actual progress bar
+ */
 const ProgressBar = (props) => {
   const { bgcolor, completed, text } = props;
 

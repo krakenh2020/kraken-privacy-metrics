@@ -1,9 +1,11 @@
 import binomial from 'binomial';
 
-/*
- * Enumeration for preparing data for the frontend
+/**
+ * Enum for preparing data for the frontend.
  *
- * privacy value, color code in hex, precentage of the bar, privacy value in words
+ * The enum stores: privacy value, color code in hex, precentage of the bar,
+ * privacy value in words. The main idea is to map the privacy value to the
+ * color, the state of the progress bar and a verbal description.
  */
 class FrontendStyle {
     constructor(priv_val, bgcolor, completed, text) {
@@ -25,6 +27,12 @@ class FrontendStyle {
     }
 }
 
+/**
+ * Map a privacy score to its associated frontend style.
+ * 
+ * @param score  the privacy score in [1, 6]
+ * @returns frontend style
+ */
 export function score_to_style(score) {
     if (score > 5.5) {
         return FrontendStyle.VERY_HIGH_PRIVACY;
@@ -44,6 +52,12 @@ export function score_to_style(score) {
     return FrontendStyle.VERY_LOW_PRIVACY;
 }
 
+/**
+ * Scale a privacy grade in the range [0, 100] (100 being the best) to [1, 6] (1 being the best)
+ * 
+ * @param value privacy grade 
+ * @returns scaled grade
+ */
 export function scale_grade(value) {
     if (value >= 84) {
         return 1;
@@ -63,6 +77,12 @@ export function scale_grade(value) {
     return 6;
 }
 
+/**
+ * Get ascending scaling factor.
+ * 
+ * @param q selector
+ * @returns scaling factor
+ */
 function get_scale_asc(q) {
     if (q <= 1) {
         return 0.8;
@@ -82,6 +102,12 @@ function get_scale_asc(q) {
     return 1;
 }
 
+/**
+ * Get descending scaling factor.
+ * 
+ * @param q selector
+ * @returns scaling factor
+ */
 function get_scale_desc(q) {
     if (q <= 1) {
         return 1.2;
@@ -101,6 +127,12 @@ function get_scale_desc(q) {
     return 1;
 }
 
+/**
+ * Compute lower bound of the adversary strength.
+ * 
+ * @param score privacy score in [0, 6]
+ * @returns lower bound for the adversary strength
+ */
 export function adv_strength_min(score) {
     if (score < 0 || score > 6) {
         console.error("Must be in range [0, 6]");
@@ -114,6 +146,11 @@ export function adv_strength_min(score) {
     }
 }
 
+/**
+ * Compute upper bound of the adversary strength.
+ * @param score privacy score in [0, 6]
+ * @returns upper bound for the adversary strength
+ */
 export function adv_strength_max(score) {
     if (score < 0 || score > 6) {
         console.error("Must be in range [0, 6]");
@@ -125,15 +162,14 @@ export function adv_strength_max(score) {
     }
 }
 
-function binomialCoefficient(n, k) {
-    // Checking if n and k are integer
-    if (Number.isNaN(n) || Number.isNaN(k)) {
-        return NaN;
-    }
-
-    return binomial.get(n, k);
-}
-
+/**
+ * Calculate "Metric 1"
+ * 
+ * @param num_files  number of files
+ * @param adv_strength_min minimal adversary strength
+ * @param adv_strenght_max maximal adversary strength
+ * @returns privacy score based on metric 1
+ */
 export function metric1_calculator(num_files, adv_strength_min, adv_strenght_max) {
     // paper page 21
     if (num_files === 0) { // this solves the edge case resp. bug described in the README
@@ -155,6 +191,14 @@ export function metric1_calculator(num_files, adv_strength_min, adv_strenght_max
     return Math.round((file_access / num_files) * 100);
 }
 
+/**
+ * Calculate "Metric 2"
+ * 
+ * @param num_files number of files
+ * @param sim_files number of similar files
+ * @param privacy_val base privacy factor
+ * @returns privacy score based on metric 2
+ */
 export function metric2_calculator(num_files, sim_files, privacy_val) {
     // paper page 22
     if (sim_files > num_files) {
@@ -179,15 +223,21 @@ export function metric2_calculator(num_files, sim_files, privacy_val) {
         let temp_access = file_access - i;
         if (num_files - sim_files < temp_access) {
             i = privacy_val - (num_files - sim_files);
-            total += binomialCoefficient(sim_files, i);
+            total += binomial.get(sim_files, i);
             continue;
         }
-        total += binomialCoefficient(sim_files, i) * binomialCoefficient(temp_files, temp_access);
+        total += binomial.get(sim_files, i) * binomial.get(temp_files, temp_access);
     }
-    let dividend = binomialCoefficient(num_files, file_access);
+    let dividend = binomial.get(num_files, file_access);
     return Math.round(total / dividend * 100);
 }
 
+/**
+ * Compute adversariel "strength" from user inputs.
+ * 
+ * @param input collection of user inputs
+ * @returns estimated strength of the adversary
+ */
 function adversary(input) {
     /*
      * input default handler, if user doesn't select anything then a default value
@@ -226,18 +276,17 @@ function adversary(input) {
         input.q4 = 3;
     }
 
-    /* strength is dependent on 6 questions */
+    // strength depends on 6 questions
     let strength = input.advStrength + input.advStrength + AdvStrength2 + input.advStrength3 + input.advStrength + input.advStrength5;
     strength /= 6;
 
-    /* based on slide bar question Q1 we scale the strength */
+    // based on slide bar question Q1 we scale the strength
     strength *= get_scale_asc(input.q1);
 
-    /* edge cases: because of scaling they might get out of range */
-    strength = Math.max(1, strength);
-    strength = Math.min(6, strength);
+    // edge cases: because of scaling they might get out of range
+    strength = Math.max(1, Math.min(6, strength));
 
-    /* calculate min and max value of strength */
+    // calculate min and max value of strength
     let strength_min = adv_strength_min(strength);
     let strength_max = adv_strength_max(strength);
 
@@ -245,7 +294,19 @@ function adversary(input) {
     return metric1_calculator(input.numFiles, strength_min, strength_max); // range [0,100]
 }
 
-function calculate(counter, input) {
+/**
+ * Compute privacy metric based on the user input.
+ * 
+ * @param user input
+ * @returns privacy score as frontend style
+ */
+export default function computePrivacyMetric(input) {
+    let counter = [0, 0, 0, 0];
+    counter[0] = input.numAge + input.numBody + input.numGender + input.numHealth + input.numSport;
+    counter[1] = input.numCity + input.numCountry + input.numGPS;
+    counter[2] = input.numDegree + input.numJob + input.numGrade;
+    counter[3] = input.numConnection + input.numOther;
+
     let metric1_res = adversary(input);
     let health = 6, location = 6, job = 6, other = 6;
 
@@ -283,17 +344,7 @@ function calculate(counter, input) {
         other = scale_grade(other_res); // range [1,6]
     }
 
-    /* calculate the overall privacy value based on these 4 categories */
+    // calculate the overall privacy value based on these 4 categories
     let privacy = Math.min(6, (job + health + location + other) / 4.0); // range [1,6]
     return score_to_style(privacy);
-}
-
-export default function computePrivacyMetric(input) {
-    let counter = [0, 0, 0, 0];
-    counter[0] = input.numAge + input.numBody + input.numGender + input.numHealth + input.numSport;
-    counter[1] = input.numCity + input.numCountry + input.numGPS;
-    counter[2] = input.numDegree + input.numJob + input.numGrade;
-    counter[3] = input.numConnection + input.numOther;
-
-    return calculate(counter, input);
 }

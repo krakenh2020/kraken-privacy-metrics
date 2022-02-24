@@ -4,11 +4,6 @@ import { Container, Paper } from '@material-ui/core';
 import CheckBox from './CheckBox'
 import { useHistory } from "react-router-dom"
 
-/*
-description:
-This component handels the components for the uploading file
-*/
-
 const useStyles = makeStyles((theme) => ({
   root: {
     '& > *': {
@@ -26,7 +21,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
+/**
+ * Input form for per-file questions
+ */
 export default function Input() {
   const classes = useStyles();
   const paperStyle = { padding: '50px 20px', width: 600, margin: "20px auto" }
@@ -39,7 +36,7 @@ export default function Input() {
     <Container>
       <Paper elevation={3} style={paperStyle}>
         <h1 style={{ color: "blue" }}><u>Calculate privacy metric</u></h1>
-        
+
         <form classmin={classes.root} noValidate autoComplete="off">
           Does this file have similar information or does it have relating data to previously uploaded files?
           Please select all items that are contained in the file:

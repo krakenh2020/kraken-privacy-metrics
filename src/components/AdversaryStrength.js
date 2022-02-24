@@ -4,11 +4,6 @@ import { Container, Paper, Button, Select, MenuItem, InputLabel, FormControl } f
 import Slider from '@material-ui/core/Slider';
 import { useHistory } from "react-router-dom"
 
-/*
-description:
-This component is responsible for the questions to calculate the adversary strength
-*/
-
 const useStyles = makeStyles((theme) => ({
   root: {
     '& > *': {
@@ -71,6 +66,9 @@ function valuetext(value) {
   return `${value}`;
 }
 
+/**
+ * Initial form to estimate the adversary strength.
+ */
 export default function AdversaryStrength() {
 
   const classes = useStyles();
@@ -185,7 +183,7 @@ export default function AdversaryStrength() {
 
   let history = useHistory();
 
-  //sends data to the backend
+  // move forward to the next form
   const handleClickAdversary = (e) => {
     e.preventDefault()
     const state = { advStrength, advStrength1, advStrength2, advStrength3, advStrength4, advStrength5, q1, q2, q3, q4 }

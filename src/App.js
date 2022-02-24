@@ -6,11 +6,9 @@ import privacyVal from './components/PrivacyVal';
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Redirect } from 'react-router';
 
-/*
-description:
-This is the control file of the frontend. From here the flow of the different pages gets controlled.
-*/
-
+/**
+ * Main entry point to the privacy metrics widget
+ */
 function App() {
   return (
     <div className="App">
